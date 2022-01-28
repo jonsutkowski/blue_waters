@@ -6,6 +6,7 @@ Created on Wed Mar 17 20:01:45 2021
 """
 # Import libraries
 import random
+import time
 from scripts.spreadsheet import Spreadsheet
 from scripts.teams import Team, Package
 
@@ -30,11 +31,15 @@ class Portfolio:
         for package in Package.PACKAGE_LIST:
             menu.append(package)
 
+        global max
+        max = 0
+        global start_time
+        start_time = time.time()
+
         # Generate list of each possible combination of teams/packages to buy.
         def generate_purchase_combinations(menu, current_balance):
             # If the menu is empty, return empty list
             if len(menu) == 0:
-                print("our worst fears have been realized, master kenobi")
                 return []
 
             # If the menu is not empty, first check if the current_balance can
@@ -44,7 +49,6 @@ class Portfolio:
             total_menu_cost = 0
             for item in menu:
                 total_menu_cost += int(item.price)
-
             if current_balance >= total_menu_cost:
                 return [ menu ]
 
@@ -54,14 +58,20 @@ class Portfolio:
             purchase_combinations = []
             first_item_on_menu = menu[0]
             menu_without_first_item = menu[1:]
-            balance_if_purchase_first_item = current_balance - first_item_on_menu.price
+            balance_if_purchase_first_item = current_balance - int(first_item_on_menu.price)
+
             for purchase_combination in generate_purchase_combinations(menu_without_first_item, current_balance):
                 purchase_combinations.append(purchase_combination)
 
-            if balance_if_purchase_first_item <= 0:
+            if balance_if_purchase_first_item >= 0:
                 for purchase_combination in generate_purchase_combinations(menu_without_first_item, \
                                                                            balance_if_purchase_first_item):
-                    purchase_combinations.append(first_item_on_menu + purchase_combination)
+                    purchase_combinations.append([first_item_on_menu] + purchase_combination)
+
+            global max
+            if len(purchase_combinations) > max:
+                print(len(purchase_combinations), time.time() - start_time)
+                max = len(purchase_combinations)
 
             return purchase_combinations
 

@@ -15,10 +15,12 @@ Bracket.generate_brackets(Bracket, n=1)
 
 Portfolio.generate_portfolios()
 
-for portfolio in Portfolio.PORTFOLIO_LIST:
-    print(portfolio.name)
-    for team in portfolio.team_list:
-        print(team.name)
+# for portfolio in Portfolio.PORTFOLIO_LIST:
+#     print(portfolio.name)
+#     for team in portfolio.team_list:
+#         print(team.name)
+#
+#     print(len(portfolio.team_list))
 
 
 # accepts a float, returns a float rounded to nearest thousandth
