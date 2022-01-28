@@ -94,6 +94,7 @@ class Package:
         # add instance variables
         self.name = None
         self.team_list = None
+        self.price = None
 
         # add to PACKAGE_LIST
         Package.PACKAGE_LIST.append(self)

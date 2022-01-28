@@ -7,10 +7,18 @@ Created on Mon Mar 15 21:20:49 2021
 
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
+from scripts.portfolio import Portfolio
 
 Team.generate_team_list()
 
-Bracket.generate_brackets(Bracket, n=100000)
+Bracket.generate_brackets(Bracket, n=1)
+
+Portfolio.generate_portfolios()
+
+for portfolio in Portfolio.PORTFOLIO_LIST:
+    print(portfolio.name)
+    for team in portfolio.team_list:
+        print(team.name)
 
 
 # accepts a float, returns a float rounded to nearest thousandth

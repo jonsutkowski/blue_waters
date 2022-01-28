@@ -10,7 +10,7 @@ from scripts.spreadsheet import Spreadsheet
 from scripts.teams import Team, Package
 
 class Bracket:
-    # master list of all portfolios
+    # master list of all brackets
     BRACKET_LIST = []
 
     # Important parameter! This indicates how many points a team earns based on the number of
