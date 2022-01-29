@@ -8,8 +8,8 @@ Created on Wed Mar 17 20:01:45 2021
 from scripts.spreadsheet import Spreadsheet
 
 # Set parameters which govern how the win_ratio value is generated based on the seed
-AVERAGE_WIN_RATIO = 0.5
-RANGE_OF_WIN_RATIOS = 0.4
+AVERAGE_WIN_RATIO = 0.83
+RANGE_OF_WIN_RATIOS = 0.31
 
 class Team:
     # master list of all portfolios
