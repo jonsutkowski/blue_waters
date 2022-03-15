@@ -109,6 +109,35 @@ if __name__ == "__main__":
 
     BlueWaters.print_win_rates_by_regional_seed()
 
+    Portfolio.generate_random_portfolios(1)
+
+    portfolio_sample = Portfolio.PORTFOLIO_LIST[0]
+
+    sample_names = []
+    for team in portfolio_sample.team_list:
+        sample_names.append(team.name)
+
+    portfolio_from_seed = Portfolio.generate_random_portfolio_from_seed(portfolio_sample, number_of_teams_to_sell=3)
+
+    from_seed_names = []
+    for team in portfolio_from_seed.team_list:
+        from_seed_names.append(team.name)
+
+    sample_names.sort()
+    from_seed_names.sort()
+
+
+    print("\n\n from seed:")
+    for i in range(0, len(sample_names)):
+        sample = sample_names[i]
+        try:
+            from_seed = from_seed_names[i]
+        except:
+            from_seed = ''
+
+        print(sample, '                                      ', from_seed)
+    print()
+
 
 
 

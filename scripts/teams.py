@@ -34,7 +34,7 @@ class Team:
             new_package = Package()
             new_package.name = package_name
             new_package.team_list = []
-            new_package.price = package_price
+            new_package.price = int(package_price)
 
         # iterate thru all but first row of menu.csv
         for i in range(1, len(menu_array)):
