@@ -114,14 +114,29 @@ if __name__ == "__main__":
     portfolio_sample = Portfolio.PORTFOLIO_LIST[0]
 
     sample_names = []
+    sample_prices = 0
+    print("sample:")
     for team in portfolio_sample.team_list:
         sample_names.append(team.name)
+        if type(team.price) == int:
+            sample_prices += team.price
+        else:
+            print(team.price)
+    print(sample_prices)
+    print()
 
-    portfolio_from_seed = Portfolio.generate_random_portfolio_from_seed(portfolio_sample, number_of_teams_to_sell=3)
+    portfolio_from_seed = Portfolio.generate_random_portfolio_from_seed(portfolio_sample, number_of_teams_to_sell=0)
 
     from_seed_names = []
+    from_seed_prices = 0
+    print("from_seed:")
     for team in portfolio_from_seed.team_list:
         from_seed_names.append(team.name)
+        if type(team.price) == int:
+            from_seed_prices += team.price
+        else:
+            print(team.price)
+    print(from_seed_prices)
 
     sample_names.sort()
     from_seed_names.sort()
@@ -138,6 +153,8 @@ if __name__ == "__main__":
         print(sample, '                                      ', from_seed)
     print()
 
+    Portfolio.print_portfolio(portfolio_sample)
+    Portfolio.print_portfolio(portfolio_from_seed)
 
 
 

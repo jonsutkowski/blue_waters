@@ -239,7 +239,11 @@ class Portfolio:
         
         return Portfolio(team_list = seed_team_list)
 
-
+    def print_portfolio(portfolio):
+        print("\nPortfolio:", portfolio.name)
+        print("Teams: ")
+        for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
+            print("-", team.name)
 
 
     # Function for instantiation of a Bracket Object
@@ -256,6 +260,13 @@ class Portfolio:
 
     # Function for instantiation of Portfolio Object with a given set of teams
     def __init__(self, team_list=[]):
+        # Create portfolio name
+        portfolio_names = []
+        for row in Spreadsheet.read_csv("input_data/name_bank.csv"):
+            portfolio_names.append(row[0])
+        random.shuffle(portfolio_names) # "shuffle the deck" of portfolio names
+        self.name = portfolio_names[0]
+
         # add instance variables
         self.team_list = team_list       # A list of all the teams included in the portfolio
         self.package_list = []          # a list of any packages the portfolio might have
