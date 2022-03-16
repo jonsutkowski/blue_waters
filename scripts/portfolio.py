@@ -248,7 +248,15 @@ class Portfolio:
         
         return Portfolio.new_portfolio(team_list = seed_team_list)
 
-    def print_portfolio(portfolio):
+    # given a portfolio, return the number of times that value exceeded "points_to_win_bracket".
+    def get_number_of_wins(portfolio, points_to_win_bracket=175):
+        number_of_wins = 0
+        for point_value in portfolio.points_history:
+            if point_value >= points_to_win_bracket:
+                number_of_wins += 1
+        return number_of_wins
+
+    def print_portfolio(portfolio, includeTeams = True, points_to_win_bracket=175):
         # Print name
         print("\nPortfolio:", portfolio.name)
 
@@ -271,11 +279,48 @@ class Portfolio:
                     packages_already_counted.append(package)
         print("Total Cost:", dollar_value)
 
+        # Print the number of wins the team gets
+        print(
+            "# times scored > " + str(points_to_win_bracket) + ":",
+            Portfolio.get_number_of_wins(portfolio)
+        )
+
         # Print Teams
-        print("Teams: [")
-        for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
-            print("    ", '"' + team.name + '",')
-        print("]")
+        if includeTeams:
+            print("Teams: [")
+            for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
+                print("    ", '"' + team.name + '",')
+            print("]")
+
+    # Given some portfolio, crawl around by selling one team at a time until
+    # a portfolio is found that is a 'local minima' (no one-team swap will
+    # improve the score)
+    def find_relative_best_portfolio_from_seed(portfolio, points_to_win_bracket=175):
+        # Generate a bunch of random portfolios one 'step' away from the initial portfolio
+        new_portfolios = []
+        for i in range(0, 200):
+            new_portfolios.append(Portfolio.generate_random_portfolio_from_seed(portfolio, number_of_teams_to_sell = 1))
+        
+        # Add the 'old' portfolio to the list of portfolios (just in case that is the highest-winning portfolio)
+        new_portfolios.append(portfolio)
+        
+        max_number_of_wins = 0
+        current_portfolio_champ = None
+        for portfolio in new_portfolios:
+            current_portfolio_number_of_wins = 0
+            for point_value in portfolio.points_history:
+                if point_value >= points_to_win_bracket:
+                    current_portfolio_number_of_wins += 1
+            
+            if current_portfolio_number_of_wins > max_number_of_wins:
+                max_number_of_wins = current_portfolio_number_of_wins
+                current_portfolio_champ = portfolio
+
+        if current_portfolio_champ == portfolio:
+            return portfolio
+        else:
+            return Portfolio.find_relative_best_portfolio_from_seed(current_portfolio_champ)
+
 
     # Function for instantiation of a Bracket Object
     def __init__(self):
