@@ -6,6 +6,7 @@ Created on Mon Mar 15 21:20:49 2021
 """
 
 from random import random
+import csv
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
 from scripts.portfolio import Portfolio
@@ -166,21 +167,42 @@ class BlueWaters:
         plt.show()
         plt.pause(3)
 
+    def export_team_data():
+        # Get all the team data
+        output_array = []
+        for team in Team.TEAM_LIST:
+            new_row = []
+
+            new_row.append(team.name)
+            for bracket in Bracket.BRACKET_LIST:
+                new_row.append(bracket.scoreboard[team])
+            
+            output_array.append(new_row)
+
+        # Transpose the array
+        transposed_output_array = []
+        for j in range(0, len(output_array[0])):
+            new_row = []
+            for i in range(0, len(output_array)):
+                new_row.append(output_array[i][j])
+            transposed_output_array.append(new_row)
+        
+        # Save it to csv
+        filename = "blue_waters_team_data.csv"   # Create the output filename
+        csvfile = open(filename, "w+", newline='')                  # create the file
+        csvWriter = csv.writer(csvfile, delimiter=',')
+        csvWriter.writerows(transposed_output_array)                           # load the data into the file
+        
+        return
+
 if __name__ == "__main__":
     BlueWaters.initiate_model(10000)
+
+    BlueWaters.export_team_data()
 
     # BlueWaters.print_win_rates_by_regional_seed()
 
     random_portfolios = Portfolio.PORTFOLIO_LIST[:]
     Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[0]))
-
-    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
-    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
-    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
-    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
-    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
-    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
-    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
-    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
     
-    Portfolio.plot_portfolios()
+    BlueWaters.plot_portfolios()
