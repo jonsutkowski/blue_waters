@@ -175,29 +175,37 @@ class Portfolio:
 
         # ensure there will not be a list index error
         if number_of_teams_to_sell > len(seed_team_list):
-            number_of_teams_to_sell = len(seed_team_list)
+            number_of_teams_to_sell = len(seed_team_list) - 1
 
         # find out how much money the seed team list is worth
+        print("\nFind out how much money teh seed team list is worth.")
         seed_team_dollar_value = 0
         for team in seed_team_list:
             if type(team.price) == int:
+                print("Adding", team.price, "for", team.name)
                 seed_team_dollar_value += team.price
         for package in seed_portfolio.package_list:
             for package_i in Package.PACKAGE_LIST:
                 if package == package_i.name:
                     package = package_i
-                    break
-            
+            print("Adding", package.price, "for", package.name)
             seed_team_dollar_value += package.price
+
+        potential_buys = [] # list of teams to potentially buy. important to do this step before the teams to be removed have been removeed from seed_team_list
+        for team in Team.TEAM_LIST:
+            if team not in seed_team_list:
+                potential_buys.append(team)
 
         # sell 'number_of_teams_to_sell' teams at random
         random.shuffle(seed_team_list)
 
+        print("\n Pick a team(s) to sell")
         available_budget = Portfolio.STARTING_BALANCE - seed_team_dollar_value
         removed_teams = []
         for i in range(0, number_of_teams_to_sell):
             team = seed_team_list[i]
             if type(team.price) == int:
+                print("Removing", team.name, "from portfolio, adding", team.price, "to budget")
                 seed_team_list.remove(team) # If it is a solo team, just remove the team, and add the team's price tag to the available budget.
                 removed_teams.append(team)
                 available_budget += team.price
@@ -206,15 +214,12 @@ class Portfolio:
                     if package_i.name == team.price:
                         package = package_i
                 
+                print("Removing", package.name, "from portfolio, adding", package.price, "to budget")
                 for team in package.team_list: # If it is team in a package, remove every associated team from the seed_team_list.
+                    print("\-->", team.name, "removed")
                     seed_team_list.remove(team) 
                     removed_teams.append(team)
                 available_budget += package.price
-        
-        potential_buys = [] # list of teams to potentially buy
-        for team in Team.TEAM_LIST:
-            if team not in seed_team_list:
-                potential_buys.append(team)
         
         # Randomize potential buys
         random.shuffle(potential_buys)
@@ -225,8 +230,10 @@ class Portfolio:
         # for each team in potential buys (sorted randomly plus the removed teams placed at the very end), keep buying teams until
         # out of money
         for team in potential_buys:
+            print("looking at team", team.name, "which costs", team.price, "with", available_budget, "in my pocket")
             if type(team.price) == int:
                 if available_budget >= team.price:
+                    print("buying", team.name, "because it costs", team.price, "which is less than our budget", available_budget)
                     available_budget -= team.price
                     seed_team_list.append(team)
             else:
@@ -238,12 +245,14 @@ class Portfolio:
                 if package.price <= available_budget:
                     packageAlreadyInSeedList = False
                     for team in seed_team_list:
-                        if team.price == package:
+                        if team.price == package.name:
                             packageAlreadyInSeedList = True
                     
                     if not packageAlreadyInSeedList:
+                        print("buying", package.name, "because it costs", package.price, "which is less than budget", available_budget)
                         available_budget -= package.price
                         for team in package.team_list:
+                            print("\--> Adding", team.name)
                             seed_team_list.append(team)
         
         return Portfolio.new_portfolio(team_list = seed_team_list)
@@ -282,7 +291,7 @@ class Portfolio:
         # Print the number of wins the team gets
         print(
             "# times scored > " + str(points_to_win_bracket) + ":",
-            Portfolio.get_number_of_wins(portfolio)
+            Portfolio.get_number_of_wins(portfolio, points_to_win_bracket)
         )
 
         # Print Teams

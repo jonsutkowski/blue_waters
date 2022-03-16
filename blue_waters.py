@@ -7,11 +7,18 @@ Created on Mon Mar 15 21:20:49 2021
 
 from random import random
 import csv
+import numpy as np
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
 from scripts.portfolio import Portfolio
 
 class BlueWaters:
+    from random import random
+    import csv
+    import numpy as np
+    from scripts.bracket import Bracket
+    from scripts.teams import Team, Package
+    from scripts.portfolio import Portfolio
 
     def initiate_model(num_brackets = 10000, num_portfolios=1):
         Team.generate_team_list()
@@ -109,14 +116,14 @@ class BlueWaters:
     # This makes use of portfolio.py's "find_relative_best_portfolio_from_seed" and uses it in a more "meta" way.
     # It never ends--the user must ctrl+C out of the function when he wants to get out. It continually flushes
     # out objects from RAM to attempt to get higher and higher results.
-    def find_best_portfolio(portfolio, points_to_win_bracket=175):
+    def find_best_portfolio(portfolio, points_to_win_bracket=175, number_competitors_per_iteration=5):
         current_champion = portfolio
         new_champion = None
         while True:
             # Create new random portfolios (the current portfolio is assumed to be at some relative maximum, so we
             # need to "leap" out of the pocket to discover new relative maxima.)
             new_seed_portfolios = []
-            for i in range(0, 5):
+            for i in range(0, number_competitors_per_iteration):
                 new_seed_portfolios.append(
                     Portfolio.generate_random_portfolio_from_seed(current_champion, number_of_teams_to_sell=5)
                 )
@@ -141,30 +148,42 @@ class BlueWaters:
             # Finally, compare all the contenders for the best relative maximum along with the current_champion. If
             # one of the contenders performs better, it becomes the new champion and the cycle repeats.
             new_champion = current_champion
-            new_champion_number_of_wins = Portfolio.get_number_of_wins(new_champion)
+            new_champion_number_of_wins = Portfolio.get_number_of_wins(new_champion, points_to_win_bracket)
             for portfolio in new_relative_best_portfolios:
-                number_of_wins = Portfolio.get_number_of_wins(portfolio)
+                number_of_wins = Portfolio.get_number_of_wins(portfolio, points_to_win_bracket)
 
                 if number_of_wins > new_champion_number_of_wins:
                     new_champion = portfolio
-                    new_champion_number_of_wins = Portfolio.get_number_of_wins(new_champion)
+                    new_champion_number_of_wins = Portfolio.get_number_of_wins(new_champion, points_to_win_bracket)
             
             print("\nNew highest-winning relative max portfolio:")
             Portfolio.print_portfolio(new_champion, includeTeams=False)
 
             if new_champion == current_champion:
-                print("Found the same highest performing portfolio twice. exiting.")
+                print("\nFound the same highest performing portfolio twice. exiting. Portfolio info:")
+                Portfolio.print_portfolio(new_champion)
                 break
 
             # If looping back to generate more portfolios, purge the current list of portfolios by removing all but the top 100.
             # This code TBD.
-
+            highest_scores = np.zeros(100)
+            for portfolio in Portfolio.PORTFOLIO_LIST:
+                portfolio_score = Portfolio.get_number_of_wins(portfolio, points_to_win_bracket)
+                portfolio_has_highest_score = False
+                for i in range(0, len(highest_scores)):
+                    if portfolio_score > highest_scores[i]:
+                        portfolio_has_highest_score = True
+                        for j in range(i+1, len(highest_scores)):
+                            highest_scores[j] = highest_scores[j - 1]
+                        highest_scores[i] = portfolio_score
+                
+                if not portfolio_has_highest_score:
+                    Portfolio.PORTFOLIO_LIST.remove(portfolio)
+                    del portfolio
+            print("\nUpdate: There are now only", len(Portfolio.PORTFOLIO_LIST), "portfolios on PORTFOLIO_LIST.\n")
         
         return current_champion
             
-            
-
-
     def plot_portfolios():
         from mpl_toolkits import mplot3d
         import numpy as np
@@ -226,13 +245,15 @@ class BlueWaters:
         return
 
 if __name__ == "__main__":
-    BlueWaters.initiate_model(num_brackets=1000, num_portfolios=1)
+    BlueWaters.initiate_model(num_brackets=10000, num_portfolios=1)
 
     # BlueWaters.export_team_data()
     # BlueWaters.print_win_rates_by_regional_seed()
 
-    initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
-    
-    BlueWaters.find_best_portfolio(initial_best_portfolio)
+    # initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
+    A = Portfolio.generate_random_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0], number_of_teams_to_sell=3)
+    while input() == "":
+        A = Portfolio.generate_random_portfolio_from_seed(A)
+        Portfolio.print_portfolio(A)
 
     # BlueWaters.plot_portfolios()
