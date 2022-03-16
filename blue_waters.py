@@ -245,15 +245,11 @@ class BlueWaters:
         return
 
 if __name__ == "__main__":
-    BlueWaters.initiate_model(num_brackets=10000, num_portfolios=1)
+    BlueWaters.initiate_model(num_brackets=100000, num_portfolios=1)
 
     # BlueWaters.export_team_data()
     # BlueWaters.print_win_rates_by_regional_seed()
 
-    # initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
-    A = Portfolio.generate_random_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0], number_of_teams_to_sell=3)
-    while input() == "":
-        A = Portfolio.generate_random_portfolio_from_seed(A)
-        Portfolio.print_portfolio(A)
+    initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
 
     # BlueWaters.plot_portfolios()
