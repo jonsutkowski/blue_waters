@@ -5,6 +5,7 @@ Created on Mon Mar 15 21:20:49 2021
 @author: Jonathan Sutkowski
 """
 
+from random import random
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
 from scripts.portfolio import Portfolio
@@ -16,7 +17,7 @@ class BlueWaters:
 
         Bracket.generate_brackets(Bracket, n = num_brackets)
 
-        Portfolio.generate_random_portfolios(number_of_portfolios=100)
+        Portfolio.generate_random_portfolios(number_of_portfolios=1)
 
     def print_win_rates_by_regional_seed():
         # Get the number of brackets
@@ -133,41 +134,53 @@ class BlueWaters:
         else:
             return BlueWaters.find_best_portfolio(current_portfolio_champ)
 
+    def plot_portfolios():
+        from mpl_toolkits import mplot3d
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        # Get the data from portfolios
+        standard_deviations = []
+        averages_of_points_scored = []
+        numbers_of_wins = []
+        for portfolio in Portfolio.PORTFOLIO_LIST:
+            points_history = portfolio.points_history
+
+            standard_deviation = np.std(points_history)
+            average_points_scored = np.average(points_history)
+            number_of_wins = sum(i > 175 for i in points_history)
+
+            standard_deviations.append(standard_deviation)
+            averages_of_points_scored.append(average_points_scored)
+            numbers_of_wins.append(number_of_wins)
+
+        ## Plot the data
+
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+
+        xdata = standard_deviations
+        ydata = averages_of_points_scored
+        zdata = numbers_of_wins
+        ax.scatter3D(xdata, ydata, zdata)
+        plt.show()
+        plt.pause(3)
+
 if __name__ == "__main__":
     BlueWaters.initiate_model(10000)
 
-    BlueWaters.print_win_rates_by_regional_seed()
+    # BlueWaters.print_win_rates_by_regional_seed()
 
     random_portfolios = Portfolio.PORTFOLIO_LIST[:]
+    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[0]))
 
-    for portfolio in random_portfolios:
-        BlueWaters.find_best_portfolio(portfolio)
+    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
+    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
+    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
+    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
+    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
+    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
+    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
+    Portfolio.print_portfolio(BlueWaters.find_best_portfolio(random_portfolios[-40]))
     
     Portfolio.plot_portfolios()
-
-
-# for portfolio in Portfolio.PORTFOLIO_LIST:
-#     print(portfolio.name)
-#     for team in portfolio.team_list:
-#         print(team.name)
-#
-#     print(len(portfolio.team_list))
-
-#for t in range(0,1000):
-#    for a in tracker:
-#        for b in tracker:
-#            A = tracker[a][0]
-#            B = tracker[b][0]
-#
-#            did_win = didWin(A, B)
-#            
-#            if did_win:
-#                tracker[a][1] += 1
-#                tracker[b][2] += 1
-#            else:
-#                tracker[a][2] += 1
-#                tracker[b][1] += 1
-
-#for i in tracker:
-#    array = tracker[i]
-#    tracker[i].append(array[1]/(array[1] + array[2]))

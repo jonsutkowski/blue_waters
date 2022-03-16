@@ -277,38 +277,6 @@ class Portfolio:
             print("    ", '"' + team.name + '",')
         print("]")
 
-    def plot_portfolios():
-        from mpl_toolkits import mplot3d
-        import numpy as np
-        import matplotlib.pyplot as plt
-
-        # Get the data from portfolios
-        standard_deviations = []
-        averages_of_points_scored = []
-        numbers_of_wins = []
-        for portfolio in Portfolio.PORTFOLIO_LIST:
-            points_history = portfolio.points_history
-
-            standard_deviation = np.std(points_history)
-            average_points_scored = np.average(points_history)
-            number_of_wins = sum(i > 175 for i in points_history)
-
-            standard_deviations.append(standard_deviation)
-            averages_of_points_scored.append(average_points_scored)
-            numbers_of_wins.append(number_of_wins)
-
-        ## Plot the data
-
-        fig = plt.figure()
-        ax = plt.axes(projection='3d')
-
-        xdata = standard_deviations
-        ydata = averages_of_points_scored
-        zdata = numbers_of_wins
-        ax.scatter3D(xdata, ydata, zdata)
-        plt.show()
-        plt.pause(3)
-
     # Function for instantiation of a Bracket Object
     def __init__(self):
         # add instance variables
