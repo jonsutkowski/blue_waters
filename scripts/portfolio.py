@@ -312,7 +312,7 @@ class Portfolio:
                 if point_value >= points_to_win_bracket:
                     current_portfolio_number_of_wins += 1
             
-            if current_portfolio_number_of_wins > max_number_of_wins:
+            if current_portfolio_number_of_wins > max_number_of_wins or max_number_of_wins == 0:
                 max_number_of_wins = current_portfolio_number_of_wins
                 current_portfolio_champ = portfolio
 
