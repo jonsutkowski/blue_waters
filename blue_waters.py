@@ -16,7 +16,7 @@ class BlueWaters:
 
         Bracket.generate_brackets(Bracket, n = num_brackets)
 
-        Portfolio.generate_random_portfolios(number_of_portfolios=1)
+        Portfolio.generate_random_portfolios(number_of_portfolios=100)
 
     def print_win_rates_by_regional_seed():
         # Get the number of brackets
@@ -104,59 +104,46 @@ class BlueWaters:
             print(seed, "    | ", item)
             seed += 1
 
+    # Given some portfolio, crawl around by selling one team at a time until
+    # a portfolio is found that is a 'local minima' (no one-team swap will
+    # improve the score)
+    def find_best_portfolio(portfolio, points_to_win_bracket=175):
+        # Generate a bunch of random portfolios one 'step' away from the initial portfolio
+        new_portfolios = []
+        for i in range(0, 200):
+            new_portfolios.append(Portfolio.generate_random_portfolio_from_seed(portfolio, number_of_teams_to_sell = 1))
+        
+        # Add the 'old' portfolio to the list of portfolios (just in case that is the highest-winning portfolio)
+        new_portfolios.append(portfolio)
+        
+        max_number_of_wins = 0
+        current_portfolio_champ = None
+        for portfolio in new_portfolios:
+            current_portfolio_number_of_wins = 0
+            for point_value in portfolio.points_history:
+                if point_value >= points_to_win_bracket:
+                    current_portfolio_number_of_wins += 1
+            
+            if current_portfolio_number_of_wins > max_number_of_wins:
+                max_number_of_wins = current_portfolio_number_of_wins
+                current_portfolio_champ = portfolio
+
+        if current_portfolio_champ == portfolio:
+            return portfolio
+        else:
+            return BlueWaters.find_best_portfolio(current_portfolio_champ)
+
 if __name__ == "__main__":
-    BlueWaters.initiate_model(100)
+    BlueWaters.initiate_model(10000)
 
     BlueWaters.print_win_rates_by_regional_seed()
 
-    Portfolio.generate_random_portfolios(1)
+    random_portfolios = Portfolio.PORTFOLIO_LIST[:]
 
-    portfolio_sample = Portfolio.PORTFOLIO_LIST[0]
-
-    sample_names = []
-    sample_prices = 0
-    print("sample:")
-    for team in portfolio_sample.team_list:
-        sample_names.append(team.name)
-        if type(team.price) == int:
-            sample_prices += team.price
-        else:
-            print(team.price)
-    print(sample_prices)
-    print()
-
-    portfolio_from_seed = Portfolio.generate_random_portfolio_from_seed(portfolio_sample, number_of_teams_to_sell=0)
-
-    from_seed_names = []
-    from_seed_prices = 0
-    print("from_seed:")
-    for team in portfolio_from_seed.team_list:
-        from_seed_names.append(team.name)
-        if type(team.price) == int:
-            from_seed_prices += team.price
-        else:
-            print(team.price)
-    print(from_seed_prices)
-
-    sample_names.sort()
-    from_seed_names.sort()
-
-
-    print("\n\n from seed:")
-    for i in range(0, len(sample_names)):
-        sample = sample_names[i]
-        try:
-            from_seed = from_seed_names[i]
-        except:
-            from_seed = ''
-
-        print(sample, '                                      ', from_seed)
-    print()
-
-    Portfolio.print_portfolio(portfolio_sample)
-    Portfolio.print_portfolio(portfolio_from_seed)
-
-
+    for portfolio in random_portfolios:
+        BlueWaters.find_best_portfolio(portfolio)
+    
+    Portfolio.plot_portfolios()
 
 
 # for portfolio in Portfolio.PORTFOLIO_LIST:

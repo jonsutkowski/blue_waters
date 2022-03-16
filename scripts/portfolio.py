@@ -84,7 +84,7 @@ class Portfolio:
 
         # loop through each possible combination of purchases. Create a portfolio object for each one.
         for purchase_combination in generate_purchase_combinations(menu, Portfolio.STARTING_BALANCE):
-            new_portfolio = Portfolio()
+            new_portfolio = Portfolio.new_portfolio()
             try:
                 new_portfolio.name = portfolio_names[0]
                 portfolio_names = portfolio_names[1:]
@@ -128,7 +128,7 @@ class Portfolio:
             random.shuffle(shuffled_menu)
 
             # Create new Portfolio object
-            new_portfolio = Portfolio()
+            new_portfolio = Portfolio.new_portfolio()
             try:
                 new_portfolio.name = portfolio_names[0]
                 portfolio_names = portfolio_names[1:]
@@ -145,7 +145,7 @@ class Portfolio:
                 next_item_on_menu = shuffled_menu[0]
                 shuffled_menu = shuffled_menu[1:]
 
-                if spending_money > int(next_item_on_menu.price):
+                if spending_money >= int(next_item_on_menu.price):
                     spending_money -= int(next_item_on_menu.price)
                     if type(next_item_on_menu) == Package:
                         new_portfolio.package_list.append(next_item_on_menu)
@@ -173,12 +173,21 @@ class Portfolio:
         # get initial seed team list
         seed_team_list = seed_portfolio.team_list[:]
 
+        # ensure there will not be a list index error
+        if number_of_teams_to_sell > len(seed_team_list):
+            number_of_teams_to_sell = len(seed_team_list)
+
         # find out how much money the seed team list is worth
         seed_team_dollar_value = 0
         for team in seed_team_list:
             if type(team.price) == int:
                 seed_team_dollar_value += team.price
         for package in seed_portfolio.package_list:
+            for package_i in Package.PACKAGE_LIST:
+                if package == package_i.name:
+                    package = package_i
+                    break
+            
             seed_team_dollar_value += package.price
 
         # sell 'number_of_teams_to_sell' teams at random
@@ -237,14 +246,68 @@ class Portfolio:
                         for team in package.team_list:
                             seed_team_list.append(team)
         
-        return Portfolio(team_list = seed_team_list)
+        return Portfolio.new_portfolio(team_list = seed_team_list)
 
     def print_portfolio(portfolio):
+        # Print name
         print("\nPortfolio:", portfolio.name)
-        print("Teams: ")
-        for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
-            print("-", team.name)
 
+        # Print amount of money all the teams add up to
+        dollar_value = 0
+        packages_already_counted = []
+        for team in portfolio.team_list:
+            if type(team.price) == int:
+                dollar_value += team.price
+            else:
+                package = None
+                for package_i in Package.PACKAGE_LIST:
+                    if team.price == package_i.name:
+                        package = package_i
+                if package == None:
+                    continue
+
+                if not package in packages_already_counted:
+                    dollar_value += package.price
+                    packages_already_counted.append(package)
+        print("Total Cost:", dollar_value)
+
+        # Print Teams
+        print("Teams: [")
+        for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
+            print("    ", '"' + team.name + '",')
+        print("]")
+
+    def plot_portfolios():
+        from mpl_toolkits import mplot3d
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        # Get the data from portfolios
+        standard_deviations = []
+        averages_of_points_scored = []
+        numbers_of_wins = []
+        for portfolio in Portfolio.PORTFOLIO_LIST:
+            points_history = portfolio.points_history
+
+            standard_deviation = np.std(points_history)
+            average_points_scored = np.average(points_history)
+            number_of_wins = sum(i > 175 for i in points_history)
+
+            standard_deviations.append(standard_deviation)
+            averages_of_points_scored.append(average_points_scored)
+            numbers_of_wins.append(number_of_wins)
+
+        ## Plot the data
+
+        fig = plt.figure()
+        ax = plt.axes(projection='3d')
+
+        xdata = standard_deviations
+        ydata = averages_of_points_scored
+        zdata = numbers_of_wins
+        ax.scatter3D(xdata, ydata, zdata)
+        plt.show()
+        plt.pause(3)
 
     # Function for instantiation of a Bracket Object
     def __init__(self):
@@ -257,6 +320,25 @@ class Portfolio:
         Portfolio.PORTFOLIO_LIST.append(self)
 
         return
+
+    # Function to check portfolio list before creating a portfolio
+    def new_portfolio(team_list=[]):
+        # Convert team_list to a list of team objects (as opposed to team names)
+        if len(team_list) > 0 and type(team_list[0]) == str:
+            for i in range(0, len(team_list)):
+                team_name = team_list[i]
+                for team in Team.TEAM_LIST:
+                    if team_name == team.name:
+                        team_list[i] = team
+
+        team_list = sorted(team_list, key=lambda x: x.name)
+        for portfolio_i in Portfolio.PORTFOLIO_LIST:
+            team_list_i = sorted(portfolio_i.team_list, key=lambda x: x.name)
+            
+            if team_list == team_list_i:
+                return portfolio_i
+        
+        return Portfolio(team_list)
 
     # Function for instantiation of Portfolio Object with a given set of teams
     def __init__(self, team_list=[]):

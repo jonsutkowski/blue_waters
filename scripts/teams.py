@@ -70,7 +70,6 @@ class Team:
 
         return
 
-
     def __init__(self):
         # add instance variables
         self.name = None
