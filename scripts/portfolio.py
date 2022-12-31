@@ -21,7 +21,7 @@ class Portfolio:
     ## VARIOUS FUNCTIONS
 
     def get_portfolio_by_name(name):
-        for portfolio in BlueWaters.Portfolio.PORTFOLIO_LIST:
+        for portfolio in Portfolio.PORTFOLIO_LIST:
                 if name == portfolio.name:
                         return portfolio
         return 'Null'
