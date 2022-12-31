@@ -20,6 +20,12 @@ class Portfolio:
 
     ## VARIOUS FUNCTIONS
 
+    def get_portfolio_by_name(name):
+        for portfolio in BlueWaters.Portfolio.PORTFOLIO_LIST:
+                if name == portfolio.name:
+                        return portfolio
+        return 'Null'
+    
     # Create a Portfolio object for every possible combination of teams one can buy.
     def generate_all_portfolios():
         # Generate list of all teams that are not available in packages, and all packages.
