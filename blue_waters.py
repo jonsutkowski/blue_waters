@@ -12,7 +12,6 @@ import multiprocessing
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
 from scripts.portfolio import Portfolio
-from sklearn.decomposition import PCA
 
 class BlueWaters:
     from random import random
@@ -202,6 +201,7 @@ class BlueWaters:
         from mpl_toolkits import mplot3d
         import numpy as np
         import matplotlib.pyplot as plt
+        import umap
 
         # Get the data from portfolios
         portfolios_data_to_plot = {
@@ -240,17 +240,17 @@ class BlueWaters:
         # using a dataset in which is standardized (so that a plot can be done and redone with
         # different datapoints and be comparable to
         baseline_n64_coords = []
-        for n in range(0, 32):
+        for n in range(0, 33):
             new_coord = [0]*n
             new_coord = new_coord + [1]*32
+            new_coord = new_coord + [0]*(32-n)
 
-            new_coord[n] = 1
             baseline_n64_coords.append(new_coord)
 
         portfolio_n64_coords = portfolios_data_to_plot["portfolio_n64_coords"]
-        pca = PCA(n_components=2)
-        pca.fit(baseline_n64_coords)
-        portfolio_n2_coords = pca.transform(portfolio_n64_coords)
+        umap_transformer = umap.UMAP(n_neighbors=5, min_dist=0.1)
+        umap_transformer.fit_transform(baseline_n64_coords)
+        portfolio_n2_coords = umap_transformer.transform(portfolio_n64_coords)
         for n2_coord in portfolio_n2_coords:
             portfolios_data_to_plot["portfolio_dimension_reduced_X_coord"].append(n2_coord[0])
             portfolios_data_to_plot["portfolio_dimension_reduced_Y_coord"].append(n2_coord[1])
@@ -303,4 +303,4 @@ if __name__ == "__main__":
 
     initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
 
-    # BlueWaters.plot_portfolios()
+    BlueWaters.plot_portfolios()
