@@ -236,9 +236,21 @@ class BlueWaters:
 
         # Take each portfolio's unique combination of teams (basically 64 variables which are
         # either "1" or "0", and reduce the dimensions to 2 (so each team has a unique
-        # set of values for two variables
+        # set of values for two variables. The transform from 64 to 2 dimensions is generated
+        # using a dataset in which is standardized (so that a plot can be done and redone with
+        # different datapoints and be comparable to
+        baseline_n64_coords = []
+        for n in range(0, 32):
+            new_coord = [0]*n
+            new_coord = new_coord + [1]*32
+
+            new_coord[n] = 1
+            baseline_n64_coords.append(new_coord)
+
         portfolio_n64_coords = portfolios_data_to_plot["portfolio_n64_coords"]
-        portfolio_n2_coords = PCA(n_components=2).fit_transform(portfolio_n64_coords)
+        pca = PCA(n_components=2)
+        pca.fit(baseline_n64_coords)
+        portfolio_n2_coords = pca.transform(portfolio_n64_coords)
         for n2_coord in portfolio_n2_coords:
             portfolios_data_to_plot["portfolio_dimension_reduced_X_coord"].append(n2_coord[0])
             portfolios_data_to_plot["portfolio_dimension_reduced_Y_coord"].append(n2_coord[1])
