@@ -143,7 +143,7 @@ class BlueWaters:
                     [portfolio, points_to_win_bracket]
                 )
                 new_relative_best_portfolios.append(
-                    Portfolio.find_relative_best_portfolio_from_seed(portfolio, points_to_win_brackets)
+                    Portfolio.find_relative_best_portfolio_from_seed(portfolio, points_to_win_bracket)
                 )
 
             # # Run all of the portfolio jobs in parallel (if num_processors is not specified, it as assumed
