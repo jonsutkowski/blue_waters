@@ -8,9 +8,11 @@ Created on Mon Mar 15 21:20:49 2021
 from random import random
 import csv
 import numpy as np
+import multiprocessing
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
 from scripts.portfolio import Portfolio
+from sklearn.decomposition import PCA
 
 class BlueWaters:
     from random import random
@@ -116,7 +118,7 @@ class BlueWaters:
     # This makes use of portfolio.py's "find_relative_best_portfolio_from_seed" and uses it in a more "meta" way.
     # It never ends--the user must ctrl+C out of the function when he wants to get out. It continually flushes
     # out objects from RAM to attempt to get higher and higher results.
-    def find_best_portfolio(portfolio, points_to_win_bracket=175, number_competitors_per_iteration=5):
+    def find_best_portfolio(portfolio, points_to_win_bracket=175, number_competitors_per_iteration=5, num_processors=1):
         current_champion = portfolio
         new_champion = None
         while True:
@@ -134,11 +136,23 @@ class BlueWaters:
             for portfolio in new_seed_portfolios:
                 Portfolio.print_portfolio(portfolio, includeTeams=False)
             
+            new_relative_best_portfolios_input_arguments = []
             new_relative_best_portfolios = []
             for portfolio in new_seed_portfolios:
-                new_relative_best_portfolios.append(
-                    Portfolio.find_relative_best_portfolio_from_seed(portfolio, points_to_win_bracket=points_to_win_bracket)
+                new_relative_best_portfolios_input_arguments.append(
+                    [portfolio, points_to_win_bracket]
                 )
+                new_relative_best_portfolios.append(
+                    Portfolio.find_relative_best_portfolio_from_seed(portfolio, points_to_win_brackets)
+                )
+
+            # # Run all of the portfolio jobs in parallel (if num_processors is not specified, it as assumed
+            # # the user does not want to parallel process)
+            # with multiprocessing.Pool(num_processors) as pool:
+            #     new_relative_best_portfolios = pool.map(
+            #         Portfolio.find_relative_best_portfolio_from_seed,
+            #         new_relative_best_portfolios_input_arguments
+            #     )
 
             
             print("\nRelative maxima from the current newest five portfolios:")
@@ -190,9 +204,17 @@ class BlueWaters:
         import matplotlib.pyplot as plt
 
         # Get the data from portfolios
-        standard_deviations = []
-        averages_of_points_scored = []
-        numbers_of_wins = []
+        portfolios_data_to_plot = {
+            "standard_deviations": [],
+            "averages_of_points_scored": [],
+            "number_of_wins": [],
+            "portfolio_n64_coords": [],
+            "portfolio_dimension_reduced_X_coord": [],
+            "portfolio_dimension_reduced_Y_coord": []
+        }
+        portfolios_data_to_plot["standard_deviations"] = []
+        portfolios_data_to_plot["averages_of_points_scored"] = []
+        portfolios_data_to_plot["numbers_of_wins"] = []
         for portfolio in Portfolio.PORTFOLIO_LIST:
             points_history = portfolio.points_history
 
@@ -200,18 +222,35 @@ class BlueWaters:
             average_points_scored = np.average(points_history)
             number_of_wins = sum(i > 175 for i in points_history)
 
-            standard_deviations.append(standard_deviation)
-            averages_of_points_scored.append(average_points_scored)
-            numbers_of_wins.append(number_of_wins)
+            portfolios_data_to_plot["standard_deviations"].append(standard_deviation)
+            portfolios_data_to_plot["averages_of_points_scored"].append(average_points_scored)
+            portfolios_data_to_plot["numbers_of_wins"].append(number_of_wins)
+
+            portfolio_n64_coords = []
+            for team in Team.TEAM_LIST:
+                if team in portfolio.team_list:
+                    portfolio_n64_coords.append(1)
+                else:
+                    portfolio_n64_coords.append(0)
+            portfolios_data_to_plot["portfolio_n64_coords"].append(portfolio_n64_coords)
+
+        # Take each portfolio's unique combination of teams (basically 64 variables which are
+        # either "1" or "0", and reduce the dimensions to 2 (so each team has a unique
+        # set of values for two variables
+        portfolio_n64_coords = portfolios_data_to_plot["portfolio_n64_coords"]
+        portfolio_n2_coords = PCA(n_components=2).fit_transform(portfolio_n64_coords)
+        for n2_coord in portfolio_n2_coords:
+            portfolios_data_to_plot["portfolio_dimension_reduced_X_coord"].append(n2_coord[0])
+            portfolios_data_to_plot["portfolio_dimension_reduced_Y_coord"].append(n2_coord[1])
 
         ## Plot the data
 
         fig = plt.figure()
         ax = plt.axes(projection='3d')
 
-        xdata = standard_deviations
-        ydata = averages_of_points_scored
-        zdata = numbers_of_wins
+        xdata = portfolios_data_to_plot["portfolio_dimension_reduced_X_coord"]
+        ydata = portfolios_data_to_plot["portfolio_dimension_reduced_Y_coord"]
+        zdata = portfolios_data_to_plot["numbers_of_wins"]
         ax.scatter3D(xdata, ydata, zdata)
         plt.show()
         plt.pause(3)

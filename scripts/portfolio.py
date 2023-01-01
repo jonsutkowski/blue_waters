@@ -85,7 +85,7 @@ class Portfolio:
         # generate list of portfolio names.
         portfolio_names = []
         for row in Spreadsheet.read_csv("input_data/name_bank.csv"):
-            portfolio_names.append(row[0])
+            portfolio_names.append(row[0].strip() + " #" + str(random.randint(1, 1000)))
         random.shuffle(portfolio_names) # "shuffle the deck" of portfolio names
 
         # loop through each possible combination of purchases. Create a portfolio object for each one.
@@ -114,7 +114,7 @@ class Portfolio:
         # generate list of portfolio names.
         portfolio_names = []
         for row in Spreadsheet.read_csv("input_data/name_bank.csv"):
-            portfolio_names.append(row[0])
+            portfolio_names.append(row[0].strip() + " #" + str(random.randint(1, 1000)))
         random.shuffle(portfolio_names) # "shuffle the deck" of portfolio names
 
         # Generate list of all teams that are not available in packages, and all packages.
@@ -362,7 +362,7 @@ class Portfolio:
         # Create portfolio name
         portfolio_names = []
         for row in Spreadsheet.read_csv("input_data/name_bank.csv"):
-            portfolio_names.append(row[0])
+            portfolio_names.append(row[0].strip() + " #" + str(random.randint(1, 1000)))
         random.shuffle(portfolio_names) # "shuffle the deck" of portfolio names
         self.name = portfolio_names[0]
 
