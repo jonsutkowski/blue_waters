@@ -128,6 +128,7 @@ class Portfolio:
             menu.append(package)
 
         # Create n random portfolio objects.
+        new_portfolios = []
         for i in range(0, number_of_portfolios):
             # Create randomized menu
             shuffled_menu = menu[:]
@@ -159,6 +160,8 @@ class Portfolio:
                             new_portfolio.team_list.append(team)
                     if type(next_item_on_menu) == Team:
                         new_portfolio.team_list.append(next_item_on_menu)
+            
+            new_portfolios.append(new_portfolio)
 
         # populate each portfolio object with the amount of points scored in each bracket
         for bracket in Bracket.BRACKET_LIST:
@@ -172,7 +175,7 @@ class Portfolio:
                 # add that score to the portfolio's 'points_history' value.
                 portfolio.points_history.append(points_scored_in_bracket)
 
-        return
+        return new_portfolios
 
     # Given a portfolio, create random "deviances" from the portfolio and return a list
     def generate_random_portfolio_from_seed(seed_portfolio, number_of_teams_to_sell=1):
