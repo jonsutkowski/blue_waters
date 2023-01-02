@@ -201,7 +201,8 @@ class BlueWaters:
         from mpl_toolkits import mplot3d
         import numpy as np
         import matplotlib.pyplot as plt
-        import umap
+        from sklearn.decomposition import PCA
+        #import umap
 
         # Get the data from portfolios
         portfolios_data_to_plot = {
@@ -248,9 +249,12 @@ class BlueWaters:
             baseline_n64_coords.append(new_coord)
 
         portfolio_n64_coords = portfolios_data_to_plot["portfolio_n64_coords"]
-        umap_transformer = umap.UMAP(n_neighbors=5, min_dist=0.1)
-        umap_transformer.fit_transform(baseline_n64_coords)
-        portfolio_n2_coords = umap_transformer.transform(portfolio_n64_coords)
+        #umap_transformer = umap.UMAP(n_neighbors=5, min_dist=0.1)
+        #umap_transformer.fit_transform(baseline_n64_coords)
+        #portfolio_n2_coords = umap_transformer.transform(portfolio_n64_coords)
+        pca = PCA(n_components=2)
+        pca.fit(baseline_n64_coords)
+        portfolio_n2_coords = pca.transform(portfolio_n64_coords)
         for n2_coord in portfolio_n2_coords:
             portfolios_data_to_plot["portfolio_dimension_reduced_X_coord"].append(n2_coord[0])
             portfolios_data_to_plot["portfolio_dimension_reduced_Y_coord"].append(n2_coord[1])
@@ -300,7 +304,6 @@ if __name__ == "__main__":
 
     # BlueWaters.export_team_data()
     # BlueWaters.print_win_rates_by_regional_seed()
-
     initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
 
     BlueWaters.plot_portfolios()
