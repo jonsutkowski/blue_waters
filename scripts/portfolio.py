@@ -307,12 +307,62 @@ class Portfolio:
     # a portfolio is found that is a 'local minima' (no one-team swap will
     # improve the score)
     def find_relative_best_portfolio_from_seed(portfolio, points_to_win_bracket=175):
-        # Generate a bunch of random portfolios one 'step' away from the initial portfolio
+        # Create list of all teams/packages which the seed portfolio does not have.
+        menu = []
+        for team in Team.TEAM_LIST:
+            if team in portfolio.team_list:
+                continue
+            if type(team.price) == int:
+                menu.append(team)
+        for package in Package.PACKAGE_LIST:
+            if package in portfolio.package_list:
+                continue
+            menu.append(package)
+
+        # Calculate amount of money which the portfolio has "leftover"
+        leftover_money = Portfolio.STARTING_BALANCE
+        for team in portfolio.team_list:
+            if type(team.price) == int:
+                leftover_money -= team.price
+        for package in portfolio.package_list:
+            leftover_money -= package.price
+
+        ## Generate all random portfolios which are one 'step' away from the initial portfolio
         new_portfolios = []
-        for i in range(0, 200):
-            new_portfolios.append(Portfolio.generate_random_portfolio_from_seed(portfolio, number_of_teams_to_sell = 1))
-        
-        # Add the 'old' portfolio to the list of portfolios (just in case that is the highest-winning portfolio)
+        for team_to_sell in portfolio.team_list:
+            if type(team_to_sell.price) != int:
+                continue
+            remaining_teams = portfolio.team_list[:]
+            remaining_teams.remove(team_to_sell)
+            price_of_team_sold = team_to_sell.price
+            for combination in Portfolio.generate_purchase_combinations(menu, leftover_money+price_of_team_sold):
+                packages_in_combination = []
+                for item in combination:
+                    if type(item) == Package:
+                        packages_in_combination.append(item)
+                for package in packages_in_combination:
+                    combination.remove(package)
+                    for team in package.team_list:
+                        combination.append(team)
+                new_portfolios.append(Portfolio.new_portfolio(combination + remaining_teams))
+
+        for package_to_sell in portfolio.package_list:
+            remaining_teams = portfolio.team_list[:]
+            for team in package_to_sell.team_list:
+                remaining_teams.remove(team)
+            price_of_package_sold = package_to_sell.price
+            for combination in Portfolio.generate_purchase_combinations(menu, leftover_money+price_of_package_sold):
+                packages_in_combination = []
+                for item in combination:
+                    if type(item) == Package:
+                        packages_in_combination.append(item)
+                for package in packages_in_combination:
+                    combination.remove(package)
+                    for team in package.team_list:
+                        combination.append(team)
+                new_portfolios.append(Portfolio.new_portfolio(combination + remaining_teams))
+
+        # Add the 'old' portfolio to the list of portfolios (just in case that is still the highest-winning portfolio)
         new_portfolios.append(portfolio)
         
         max_number_of_wins = 0
@@ -332,6 +382,38 @@ class Portfolio:
         else:
             return Portfolio.find_relative_best_portfolio_from_seed(current_portfolio_champ)
 
+    def generate_purchase_combinations(menu, current_balance):
+        # If the menu is empty, return empty list
+        if len(menu) == 0:
+            return []
+
+        # If the menu is not empty, first check if the current_balance can
+        # purchase everything remaining on the menu. If it can, just return
+        # a list containing the one potential combination: namely, the entire
+        # menu.
+        total_menu_cost = 0
+        for item in menu:
+            total_menu_cost += int(item.price)
+        if current_balance >= total_menu_cost:
+            return [ menu ]
+
+        # If there is not enough to buy every single team, generate two lists:
+        # one of all the combinations of teams if we buy the first team on the menu,
+        # the other all the combinations of teams if we do not.
+        purchase_combinations = []
+        first_item_on_menu = menu[0]
+        menu_without_first_item = menu[1:]
+        balance_if_purchase_first_item = current_balance - int(first_item_on_menu.price)
+
+        for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, current_balance):
+            purchase_combinations.append(purchase_combination)
+
+        if balance_if_purchase_first_item >= 0:
+            for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, \
+                                                                       balance_if_purchase_first_item):
+                purchase_combinations.append([first_item_on_menu] + purchase_combination)
+
+        return purchase_combinations
 
     # Function for instantiation of a Bracket Object
     def __init__(self):
