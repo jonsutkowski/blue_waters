@@ -311,7 +311,7 @@ class BlueWaters:
         return
 
 if __name__ == "__main__":
-    BlueWaters.initiate_model(num_brackets=100000, num_portfolios=100)
+    BlueWaters.initiate_model(num_brackets=100000, num_portfolios=1)
 
     # BlueWaters.export_team_data()
     # BlueWaters.print_win_rates_by_regional_seed()

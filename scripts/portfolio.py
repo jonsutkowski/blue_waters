@@ -111,6 +111,7 @@ class Portfolio:
 
     # Generate list of random portfolios
     def generate_random_portfolios(number_of_portfolios=1):
+        import time
         # generate list of portfolio names.
         portfolio_names = []
         for row in Spreadsheet.read_csv("input_data/name_bank.csv"):
@@ -130,6 +131,8 @@ class Portfolio:
         # Create n random portfolio objects.
         new_portfolios = []
         for i in range(0, number_of_portfolios):
+            start_time = time.time()
+
             # Create randomized menu
             shuffled_menu = menu[:]
             random.shuffle(shuffled_menu)
@@ -160,7 +163,8 @@ class Portfolio:
                             new_portfolio.team_list.append(team)
                     if type(next_item_on_menu) == Team:
                         new_portfolio.team_list.append(next_item_on_menu)
-            
+
+            print("Generated", new_portfolio.name, "in", int(time.time() - start_time), "seconds")
             new_portfolios.append(new_portfolio)
 
         # populate each portfolio object with the amount of points scored in each bracket
