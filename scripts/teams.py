@@ -52,6 +52,7 @@ class Team:
                 for package in Package.PACKAGE_LIST:
                     if new_team.price == package.name:
                         package.team_list.append(new_team)
+                        new_team.price = package
                         foundPackage = True
                 if not foundPackage:
                     print("unable to find package object for team:", new_team.name)

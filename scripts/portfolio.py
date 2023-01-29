@@ -148,20 +148,13 @@ class Portfolio:
                 next_item_on_menu = shuffled_menu[0]
                 shuffled_menu = shuffled_menu[1:]
 
-                print("~~~~~~~~")
-                print("Money to spend:", spending_money)
-                print("Next random item to consider:", next_item_on_menu.name, next_item_on_menu.price)
-
                 if spending_money >= int(next_item_on_menu.price):
-                    print(">Purchasing top team!")
                     spending_money -= int(next_item_on_menu.price)
                     if type(next_item_on_menu) == Package:
                         for team in next_item_on_menu.team_list:
                             new_team_list.append(team)
                     if type(next_item_on_menu) == Team:
                         new_team_list.append(next_item_on_menu)
-                else:
-                    print(">not enough money to purchase the top team...")
 
             # Create new portfolio object for team list
             new_portfolio = Portfolio.new_portfolio(new_team_list)
@@ -327,6 +320,7 @@ class Portfolio:
             if type(team.price) == int:
                 leftover_money -= team.price
         for package in portfolio.package_list:
+            print(package.name)
             leftover_money -= package.price
 
         ## Generate all random portfolios which are one 'step' away from the initial portfolio
@@ -346,7 +340,17 @@ class Portfolio:
                     combination.remove(package)
                     for team in package.team_list:
                         combination.append(team)
-                new_portfolios.append(Portfolio.new_portfolio(combination + remaining_teams))
+                new_portfolio = Portfolio.new_portfolio(combination + remaining_teams)
+
+                print("sold", team_to_sell.name, "($" + str(team_to_sell.price) + ") and bought ", end='')
+                for item in combination:
+                    if type(item.price) == int:
+                        print(item.name, "($" + str(item.price) + ")", end='')
+                    else:
+                        print(item.name, "(" + item.price.name + " $" + str(item.price.price) + ") ", end='')
+                print()
+                dummy_var = input("enter anything to continue:")
+                new_portfolios.append(new_portfolio)
 
         for package_to_sell in portfolio.package_list:
             remaining_teams = portfolio.team_list[:]
