@@ -137,32 +137,34 @@ class Portfolio:
             shuffled_menu = menu[:]
             random.shuffle(shuffled_menu)
 
-            # Create new Portfolio object
-            new_portfolio = Portfolio.new_portfolio()
-            try:
-                new_portfolio.name = portfolio_names[0]
-                portfolio_names = portfolio_names[1:]
-            except:
-                new_portfolio.name = "Un-named Portfolio"
-            new_portfolio.team_list = []
-            new_portfolio.package_list = []
-
             # Set initial amount of spending money to the default value.
             spending_money = Portfolio.STARTING_BALANCE
+
+            # Instantiate list of teams for the new random portfolio
+            new_team_list = []
 
             # Buy each affordable item in the randomized menu in order.
             while len(shuffled_menu) > 0 and spending_money > 0:
                 next_item_on_menu = shuffled_menu[0]
                 shuffled_menu = shuffled_menu[1:]
 
+                print("~~~~~~~~")
+                print("Money to spend:", spending_money)
+                print("Next random item to consider:", next_item_on_menu.name, next_item_on_menu.price)
+
                 if spending_money >= int(next_item_on_menu.price):
+                    print(">Purchasing top team!")
                     spending_money -= int(next_item_on_menu.price)
                     if type(next_item_on_menu) == Package:
-                        new_portfolio.package_list.append(next_item_on_menu)
                         for team in next_item_on_menu.team_list:
-                            new_portfolio.team_list.append(team)
+                            new_team_list.append(team)
                     if type(next_item_on_menu) == Team:
-                        new_portfolio.team_list.append(next_item_on_menu)
+                        new_team_list.append(next_item_on_menu)
+                else:
+                    print(">not enough money to purchase the top team...")
+
+            # Create new portfolio object for team list
+            new_portfolio = Portfolio.new_portfolio(new_team_list)
 
             print("Generated", new_portfolio.name, "in", int(time.time() - start_time), "seconds")
             new_portfolios.append(new_portfolio)
@@ -300,7 +302,7 @@ class Portfolio:
         if includeTeams:
             print("Teams: [")
             for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
-                print("    ", '"' + team.name + '",')
+                print("    ", ('"' + team.name + '",' + 60*' ')[:50], "# price:", team.price)
             print("]")
 
     # Given some portfolio, crawl around by selling one team at a time until
