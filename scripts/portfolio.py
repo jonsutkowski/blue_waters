@@ -320,7 +320,6 @@ class Portfolio:
             if type(team.price) == int:
                 leftover_money -= team.price
         for package in portfolio.package_list:
-            print(package.name)
             leftover_money -= package.price
 
         ## Generate all random portfolios which are one 'step' away from the initial portfolio
@@ -403,6 +402,9 @@ class Portfolio:
         if current_balance >= total_menu_cost:
             return [ menu ]
 
+        # Sort the list by decreasing price (necessary for the combination algorithm)
+        menu.sort(key=lambda x: x.price, reverse=True)
+
         # If there is not enough to buy every single team, generate two lists:
         # one of all the combinations of teams if we buy the first team on the menu,
         # the other all the combinations of teams if we do not.
@@ -410,15 +412,43 @@ class Portfolio:
         first_item_on_menu = menu[0]
         menu_without_first_item = menu[1:]
         balance_if_purchase_first_item = current_balance - int(first_item_on_menu.price)
+        for i in range(len(menu)):
+            total_remaining_menu_cost = 0
+            for item in menu[i:]:
+                total_remaining_menu_cost += int(item.price)
+            if total_remaining_menu_cost <= current_balance:
+                purchase_combinations.append(menu[i:])
+                break
+            elif menu[i].price <= current_balance:
+                combination = [menu[i]]
+                remaining_balance = current_balance - menu[i].price
+                for j in range(i+1, len(menu)):
+                    if menu[j].price <= remaining_balance:
+                        combination.append(menu[j])
+                        remaining_balance -= menu[j].price
+                purchase_combinations.append(combination)
 
-        for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, current_balance):
-            purchase_combinations.append(purchase_combination)
+        # for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, current_balance):
+        #     purchase_combinations.append(purchase_combination)
+        #
+        # if balance_if_purchase_first_item >= 0:
+        #     for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, \
+        #                                                                balance_if_purchase_first_item):
+        #         purchase_combinations.append([first_item_on_menu] + purchase_combination)
 
-        if balance_if_purchase_first_item >= 0:
-            for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, \
-                                                                       balance_if_purchase_first_item):
-                purchase_combinations.append([first_item_on_menu] + purchase_combination)
-
+        print("\n\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPortfolio.generate_purchase_combinations()\n")
+        print("given the following menu and $" + str(current_balance) + ":")
+        for item in menu:
+            print(item.name, item.price)
+        print("\nThe following combinations were obtained:")
+        for combo in purchase_combinations:
+            print("-> ", end='')
+            for item in combo:
+                if type(item.price) == int:
+                    print(item.name, "$" + str(item.price), end=', ')
+                else:
+                    print(item.name, "$" + str(item.price.price), end=', ')
+            print()
         return purchase_combinations
 
     # Function for instantiation of a Bracket Object
