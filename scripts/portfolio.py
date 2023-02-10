@@ -6,7 +6,10 @@ Created on Wed Mar 17 20:01:45 2021
 """
 # Import libraries
 import random
+import os
+import webbrowser
 import time
+import itertools
 from scripts.spreadsheet import Spreadsheet
 from scripts.teams import Team, Package
 from scripts.bracket import Bracket
@@ -263,6 +266,7 @@ class Portfolio:
         return number_of_wins
 
     def print_portfolio(portfolio, includeTeams = True, points_to_win_bracket=175):
+        import matplotlib.pyplot as plt
         # Print name
         print("\nPortfolio:", portfolio.name)
 
@@ -297,6 +301,32 @@ class Portfolio:
             for team in sorted(portfolio.team_list, key=lambda x: x.name):  # print list of team names (sorted alphabetically)
                 print("    ", ('"' + team.name + '",' + 60*' ')[:50], "# price:", team.price)
             print("]")
+
+        # Create a histogram of the portfolio
+        histogram_image_path = os.path.abspath("output_data/plots/" + portfolio.name + ".png").replace("#","")
+        plt.hist(portfolio.points_history, bins=15)
+        plt.title('Distribution of Points Won')
+        plt.savefig(histogram_image_path)
+
+        ### Create an html file from template
+        output_html_path = os.path.abspath("output_data/" + portfolio.name + ".html")
+        # load html template
+        report_html = []
+        for line in open("scripts/report_template.html","r").readlines():
+            report_html.append(line)
+
+        # Change html title
+        report_html[6] = '      <h1>' + 'Portfolio: ' + portfolio.name + '</h1>\n'
+
+        # Insert histogram image
+        report_html[7] = '      <img src="' + histogram_image_path + '" alt="My Image" style="width:400px;height:300px;">\n'
+
+        # save html template
+        with open(output_html_path, 'w', newline='') as file:
+            for line in report_html:
+                file.write(line)
+
+        webbrowser.open(output_html_path)
 
     # Given some portfolio, crawl around by selling one team at a time until
     # a portfolio is found that is a 'local minima' (no one-team swap will
@@ -339,6 +369,7 @@ class Portfolio:
                     combination.remove(package)
                     for team in package.team_list:
                         combination.append(team)
+                print("TYPES:", type(combination), type(remaining_teams))
                 new_portfolio = Portfolio.new_portfolio(combination + remaining_teams)
 
                 print("sold", team_to_sell.name, "($" + str(team_to_sell.price) + ") and bought ", end='')
@@ -403,30 +434,60 @@ class Portfolio:
             return [ menu ]
 
         # Sort the list by decreasing price (necessary for the combination algorithm)
-        menu.sort(key=lambda x: x.price, reverse=True)
+        menu.sort(key=lambda x: x.price, reverse=False)
 
         # If there is not enough to buy every single team, generate two lists:
         # one of all the combinations of teams if we buy the first team on the menu,
         # the other all the combinations of teams if we do not.
         purchase_combinations = []
-        first_item_on_menu = menu[0]
-        menu_without_first_item = menu[1:]
-        balance_if_purchase_first_item = current_balance - int(first_item_on_menu.price)
-        for i in range(len(menu)):
-            total_remaining_menu_cost = 0
-            for item in menu[i:]:
-                total_remaining_menu_cost += int(item.price)
-            if total_remaining_menu_cost <= current_balance:
-                purchase_combinations.append(menu[i:])
+
+        for n in range(0, 5):
+            print(len(list(itertools.combinations(menu, n))))
+            AtLeastOneCombinationWithinBudget = False
+            for purchase_combination in itertools.combinations(menu, n):
+                purchase_combination = list(purchase_combination) # convert from 'tuple' to 'list'
+                purchase_combination_total_cost = 0
+                for item in purchase_combination:
+                    purchase_combination_total_cost += item.price
+
+                # Determine if purchase combination can even be bought.
+                if purchase_combination_total_cost > current_balance:
+                    continue
+                else:
+                    AtLeastOneCombinationWithinBudget = True
+
+                # Determine if purchase combination could have bought another team,
+                # but did not.
+                leftover_money = current_balance - purchase_combination_total_cost
+                invalid_purchase_combination = False
+                for item in list(set(menu) - set(purchase_combination)):
+                    if item.price <= leftover_money:
+                        invalid_purchase_combination = True
+
+                if not invalid_purchase_combination:
+                    purchase_combinations.append(purchase_combination)
+
+            if not AtLeastOneCombinationWithinBudget:
                 break
-            elif menu[i].price <= current_balance:
-                combination = [menu[i]]
-                remaining_balance = current_balance - menu[i].price
-                for j in range(i+1, len(menu)):
-                    if menu[j].price <= remaining_balance:
-                        combination.append(menu[j])
-                        remaining_balance -= menu[j].price
-                purchase_combinations.append(combination)
+
+        # first_item_on_menu = menu[0]
+        # menu_without_first_item = menu[1:]
+        # balance_if_purchase_first_item = current_balance - int(first_item_on_menu.price)
+        # for i in range(len(menu)):
+        #     total_remaining_menu_cost = 0
+        #     for item in menu[i:]:
+        #         total_remaining_menu_cost += int(item.price)
+        #     if total_remaining_menu_cost <= current_balance:
+        #         purchase_combinations.append(menu[i:])
+        #         break
+        #     elif menu[i].price <= current_balance:
+        #         combination = [menu[i]]
+        #         remaining_balance = current_balance - menu[i].price
+        #         for j in range(i+1, len(menu)):
+        #             if menu[j].price <= remaining_balance:
+        #                 combination.append(menu[j])
+        #                 remaining_balance -= menu[j].price
+        #         purchase_combinations.append(combination)
 
         # for purchase_combination in Portfolio.generate_purchase_combinations(menu_without_first_item, current_balance):
         #     purchase_combinations.append(purchase_combination)
@@ -449,6 +510,7 @@ class Portfolio:
                 else:
                     print(item.name, "$" + str(item.price.price), end=', ')
             print()
+
         return purchase_combinations
 
     # Function for instantiation of a Bracket Object
