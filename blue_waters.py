@@ -318,8 +318,7 @@ if __name__ == "__main__":
 
     #initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
     portfolio = Portfolio.PORTFOLIO_LIST[0]
-    portfolio.print_portfolio()
-    input("dummy")
+
     portfolio.find_relative_best_portfolio_from_seed(portfolio)
     # for n in range(0,100):
     #     Portfolio.generate_random_portfolio_from_seed(portfolio).name

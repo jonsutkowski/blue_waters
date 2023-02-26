@@ -5,6 +5,7 @@ Created on Wed Mar 17 20:01:45 2021
 @author: Jonathan Sutkowski
 """
 # Import libraries
+import datetime
 import random
 import os
 import webbrowser
@@ -369,18 +370,19 @@ class Portfolio:
                     combination.remove(package)
                     for team in package.team_list:
                         combination.append(team)
-                print("TYPES:", type(combination), type(remaining_teams))
+
                 new_portfolio = Portfolio.new_portfolio(combination + remaining_teams)
 
-                print("sold", team_to_sell.name, "($" + str(team_to_sell.price) + ") and bought ", end='')
-                for item in combination:
-                    if type(item.price) == int:
-                        print(item.name, "($" + str(item.price) + ")", end='')
-                    else:
-                        print(item.name, "(" + item.price.name + " $" + str(item.price.price) + ") ", end='')
-                print()
-                dummy_var = input("enter anything to continue:")
+                # print("sold", team_to_sell.name, "($" + str(team_to_sell.price) + ") and bought ", end='')
+                # for item in combination:
+                #     if type(item.price) == int:
+                #         print(item.name, "($" + str(item.price) + ")", end='')
+                #     else:
+                #         print(item.name, "(" + item.price.name + " $" + str(item.price.price) + ") ", end='')
+                # print()
+                # dummy_var = input("enter anything to continue:")
                 new_portfolios.append(new_portfolio)
+            print("Created portfolios for all new combinations.")
 
         for package_to_sell in portfolio.package_list:
             remaining_teams = portfolio.team_list[:]
@@ -389,14 +391,19 @@ class Portfolio:
             price_of_package_sold = package_to_sell.price
             for combination in Portfolio.generate_purchase_combinations(menu, leftover_money+price_of_package_sold):
                 packages_in_combination = []
+                start_time = datetime.datetime.now()
                 for item in combination:
                     if type(item) == Package:
                         packages_in_combination.append(item)
+                print("line 395:", datetime.datetime.now() - start_time)
+                start_time = datetime.datetime.now()
                 for package in packages_in_combination:
                     combination.remove(package)
                     for team in package.team_list:
                         combination.append(team)
+                print("line 400", datetime.datetime.now() - start_time)
                 new_portfolios.append(Portfolio.new_portfolio(combination + remaining_teams))
+            print("Created portfolios for all new combinations.")
 
         # Add the 'old' portfolio to the list of portfolios (just in case that is still the highest-winning portfolio)
         new_portfolios.append(portfolio)
@@ -497,19 +504,20 @@ class Portfolio:
         #                                                                balance_if_purchase_first_item):
         #         purchase_combinations.append([first_item_on_menu] + purchase_combination)
 
-        print("\n\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPortfolio.generate_purchase_combinations()\n")
-        print("given the following menu and $" + str(current_balance) + ":")
-        for item in menu:
-            print(item.name, item.price)
-        print("\nThe following combinations were obtained:")
-        for combo in purchase_combinations:
-            print("-> ", end='')
-            for item in combo:
-                if type(item.price) == int:
-                    print(item.name, "$" + str(item.price), end=', ')
-                else:
-                    print(item.name, "$" + str(item.price.price), end=', ')
-            print()
+        # print("\n\n\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nPortfolio.generate_purchase_combinations()\n")
+        # print("given the following menu and $" + str(current_balance) + ":")
+        # for item in menu:
+        #     print(item.name, item.price)
+        # print("\nThe following combinations were obtained:")
+        # for combo in purchase_combinations:
+        #     print("-> ", end='')
+        #     for item in combo:
+        #         if type(item.price) == int:
+        #             print(item.name, "$" + str(item.price), end=', ')
+        #         else:
+        #             print(item.name, "$" + str(item.price.price), end=', ')
+        #     print()
+        print("Generated", len(purchase_combinations), "new combinations")
 
         return purchase_combinations
 
