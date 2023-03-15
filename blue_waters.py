@@ -9,6 +9,7 @@ from random import random
 import csv
 import numpy as np
 import multiprocessing
+import datetime
 from scripts.bracket import Bracket
 from scripts.teams import Team, Package
 from scripts.portfolio import Portfolio
@@ -310,24 +311,55 @@ class BlueWaters:
         
         return
 
+    def generate_expected_values(printValues=False):
+        output_array = []
+        output_array.append(["Name", "Expected_value", "ROI"])
+        for team in Team.TEAM_LIST:
+            sum = 0
+            n = 0
+            for bracket in Bracket.BRACKET_LIST:
+                sum += bracket.scoreboard[team]
+                n += 1
+
+            expected_value = sum / n
+            price = team.price
+            if type(team.price) == Package:
+                continue
+
+            ROI = expected_value / price
+            output_array.append([team.name, str(expected_value), str(ROI)])
+        for package in Package.PACKAGE_LIST:
+            package_expected_value = 0
+            for team in package.team_list:
+                sum = 0
+                n = 0
+                for bracket in Bracket.BRACKET_LIST:
+                    sum += bracket.scoreboard[team]
+                    n += 1
+
+                expected_value = sum / n
+
+                package_expected_value += expected_value
+            package_ROI = package_expected_value / package.price
+            output_array.append([package.name, str(package_expected_value), str(package_ROI)])
+
+        # print expected values.
+        if printValues:
+            for line in output_array:
+                print(line)
+
+        # save expected values to csv.
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        output_file = "output_data/" + timestamp + "_expected_values.csv"
+        csvfile = open(output_file, "w+", newline='')                  # create the file
+        csvWriter = csv.writer(csvfile, delimiter=',')
+        csvWriter.writerows(output_array)                           # load the data into the file
+
+
 if __name__ == "__main__":
     BlueWaters.initiate_model(num_brackets=1000000, num_portfolios=1)
+    BlueWaters.generate_expected_values()
 
-    for team in Team.TEAM_LIST:
-        sum = 0
-        n = 0
-        for bracket in Bracket.BRACKET_LIST:
-            sum += bracket.scoreboard[team]
-            n += 1
-
-        expected_value = sum / n
-        if type(team.price) != Package:
-            price = team.price
-        else:
-            price = 100
-
-        ROI = expected_value / price
-        print((team.name + 80*".")[:40], (str(expected_value) + 10*".")[:5], ROI)
 
     # BlueWaters.export_team_data()
     # BlueWaters.print_win_rates_by_regional_seed()
