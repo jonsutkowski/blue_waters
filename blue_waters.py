@@ -357,8 +357,35 @@ class BlueWaters:
 
 
 if __name__ == "__main__":
-    BlueWaters.initiate_model(num_brackets=1000000, num_portfolios=1)
-    BlueWaters.generate_expected_values()
+    BlueWaters.initiate_model(num_brackets=100000, num_portfolios=1)
+    initial_portfolio = BlueWaters.Portfolio.new_portfolio([
+        "Alabama",                                         # price: 21
+        "Baylor",                                          # price: 10
+        "Drake",                                           # price: <scripts.teams.Package object at 0x7f0dba1c9580>
+        "Illinois",                                        # price: 2
+        "Iona",                                            # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "Kansas",                                          # price: 20
+        "Kennesaw St.",                                    # price: <scripts.teams.Package object at 0x7f0dba1d8cd0>
+        "Kent St.",                                        # price: 1
+        "Kentucky",                                        # price: 4
+        "Lousiana",                                        # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "Marquette",                                       # price: 14
+        "Miami",                                           # price: 5
+        "Missouri",                                        # price: 3
+        "Northern Kentucky",                               # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "Oral Roberts",                                    # price: <scripts.teams.Package object at 0x7f0dba1d8cd0>
+        "TCU",                                             # price: 4
+        "Tennessee",                                       # price: 6
+        "UNC Asheville",                                   # price: <scripts.teams.Package object at 0x7f0dba1c9580>
+        "USC",                                             # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "VCU",                                             # price: 1
+        "Virginia"                                         # price: 5
+    ])
+    initial_portfolio.name = "Initial Portfolio"
+    initial_portfolio.print_portfolio()
+    while True:
+        best_portfolio = BlueWaters.Portfolio.find_relative_best_portfolio_from_seed(initial_portfolio)
+        best_portfolio.print_portfolio()
 
 
     # BlueWaters.export_team_data()

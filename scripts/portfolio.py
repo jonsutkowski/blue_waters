@@ -266,8 +266,9 @@ class Portfolio:
                 number_of_wins += 1
         return number_of_wins
 
-    def print_portfolio(portfolio, includeTeams = True, points_to_win_bracket=175):
+    def print_portfolio(portfolio, includeTeams = False, points_to_win_bracket=175):
         import matplotlib.pyplot as plt
+        plt.clf()
         # Print name
         print("\nPortfolio:", portfolio.name)
 
@@ -305,7 +306,7 @@ class Portfolio:
 
         # Create a histogram of the portfolio
         histogram_image_path = os.path.abspath("output_data/plots/" + portfolio.name + ".png").replace("#","")
-        plt.hist(portfolio.points_history, bins=15)
+        plt.hist(portfolio.points_history, bins=30, range=[0, 300])
         plt.title('Distribution of Points Won')
         plt.savefig(histogram_image_path)
 
@@ -322,6 +323,17 @@ class Portfolio:
         # Insert histogram image
         report_html[7] = '      <img src="' + histogram_image_path + '" alt="My Image" style="width:400px;height:300px;">\n'
 
+        # Insert list of teams
+        index = report_html.index('          <th>Roster</th>\n') + 5
+        for team in sorted(portfolio.team_list, key=lambda x: x.name, reverse=True):
+            if type(team.price) == Package:
+                price = team.price.name + " (" + str(team.price.price) + ")"
+            else:
+                price = str(team.price)
+            html_row = '        <tr>\n          <td>' + team.name + '</td>\n          <td>' + price + '</td>\n        </tr>'
+            report_html.insert(index,html_row)
+
+
         # save html template
         with open(output_html_path, 'w', newline='') as file:
             for line in report_html:
@@ -333,6 +345,13 @@ class Portfolio:
     # a portfolio is found that is a 'local minima' (no one-team swap will
     # improve the score)
     def find_relative_best_portfolio_from_seed(portfolio, points_to_win_bracket=175):
+        # Establish the max number of alternate portfolios to generate per team/package
+        # sold in the iterative stepping function.
+        MAX_ALTERNATES_PER_SOLD_ITEM = 20
+
+        # Record start time.
+        start_time = time.time()
+
         # Create list of all teams/packages which the seed portfolio does not have.
         menu = []
         for team in Team.TEAM_LIST:
@@ -361,7 +380,9 @@ class Portfolio:
             remaining_teams = portfolio.team_list[:]
             remaining_teams.remove(team_to_sell)
             price_of_team_sold = team_to_sell.price
-            for combination in Portfolio.generate_purchase_combinations(menu, leftover_money+price_of_team_sold):
+            purchase_combinations = Portfolio.generate_purchase_combinations(menu, leftover_money+price_of_team_sold)
+            random.shuffle(purchase_combinations)
+            for combination in purchase_combinations[0:MAX_ALTERNATES_PER_SOLD_ITEM]:
                 packages_in_combination = []
                 for item in combination:
                     if type(item) == Package:
@@ -382,28 +403,24 @@ class Portfolio:
                 # print()
                 # dummy_var = input("enter anything to continue:")
                 new_portfolios.append(new_portfolio)
-            print("Created portfolios for all new combinations.")
 
         for package_to_sell in portfolio.package_list:
             remaining_teams = portfolio.team_list[:]
             for team in package_to_sell.team_list:
                 remaining_teams.remove(team)
             price_of_package_sold = package_to_sell.price
-            for combination in Portfolio.generate_purchase_combinations(menu, leftover_money+price_of_package_sold):
+            purchase_combinations = Portfolio.generate_purchase_combinations(menu, leftover_money + price_of_package_sold)
+            random.shuffle(purchase_combinations)
+            for combination in purchase_combinations[0:MAX_ALTERNATES_PER_SOLD_ITEM]:
                 packages_in_combination = []
-                start_time = datetime.datetime.now()
                 for item in combination:
                     if type(item) == Package:
                         packages_in_combination.append(item)
-                print("line 395:", datetime.datetime.now() - start_time)
-                start_time = datetime.datetime.now()
                 for package in packages_in_combination:
                     combination.remove(package)
                     for team in package.team_list:
                         combination.append(team)
-                print("line 400", datetime.datetime.now() - start_time)
                 new_portfolios.append(Portfolio.new_portfolio(combination + remaining_teams))
-            print("Created portfolios for all new combinations.")
 
         # Add the 'old' portfolio to the list of portfolios (just in case that is still the highest-winning portfolio)
         new_portfolios.append(portfolio)
@@ -420,9 +437,14 @@ class Portfolio:
                 max_number_of_wins = current_portfolio_number_of_wins
                 current_portfolio_champ = portfolio
 
+        end_time = time.time()
+        runtime = int(end_time - start_time)
+
         if current_portfolio_champ == portfolio:
+            print("Could not find a better portfolio than", current_portfolio_champ.name)
             return portfolio
         else:
+            print("Found better portfolio:", current_portfolio_champ.name, "in", runtime, "seconds.")
             return Portfolio.find_relative_best_portfolio_from_seed(current_portfolio_champ)
 
     def generate_purchase_combinations(menu, current_balance):
@@ -449,7 +471,6 @@ class Portfolio:
         purchase_combinations = []
 
         for n in range(0, 5):
-            print(len(list(itertools.combinations(menu, n))))
             AtLeastOneCombinationWithinBudget = False
             for purchase_combination in itertools.combinations(menu, n):
                 purchase_combination = list(purchase_combination) # convert from 'tuple' to 'list'
@@ -517,7 +538,6 @@ class Portfolio:
         #         else:
         #             print(item.name, "$" + str(item.price.price), end=', ')
         #     print()
-        print("Generated", len(purchase_combinations), "new combinations")
 
         return purchase_combinations
 
