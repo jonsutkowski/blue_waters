@@ -1,5 +1,6 @@
 import os
 import traceback
+from IPython import embed
 from model import MonteCarloModel as m
 
 def show_splash_screen():
@@ -14,6 +15,7 @@ def show_menu():
     print("1. Model Validation")
     print("2. Portfolio Optimization")
     print("3. Command Line")
+    print("4. Custom Script (for debugging)")
     print("0. Exit")
 
 def model_validation():
@@ -23,11 +25,11 @@ def portfolio_optimization():
     print("You chose Portfolio Optimization. Implement your logic here.")
 
 def command_line():
-    while True:
-        try:
-            exec(input(">"))
-        except Exception:
-            traceback.print_exc()
+    embed()
+
+def custom_script():
+    print("Custom script commencing.")
+
 
 
 def main():
@@ -43,6 +45,8 @@ def main():
             portfolio_optimization()
         elif choice == "3":
             command_line()
+        elif choice == "4":
+            custom_script()
         elif choice == "0":
             print("Exiting BlueWaters. Goodbye!")
             break
