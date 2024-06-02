@@ -355,7 +355,6 @@ class MonteCarloModel:
         csvWriter = csv.writer(csvfile, delimiter=',')
         csvWriter.writerows(output_array)                           # load the data into the file
 
-
 if __name__ == "__main__":
     MonteCarloModel.initiate_model(num_brackets=10000, num_portfolios=500)
     initial_portfolio = MonteCarloModel.Portfolio.new_portfolio([
