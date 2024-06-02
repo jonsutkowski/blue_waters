@@ -1,5 +1,6 @@
 import os
-from scripts.model import MonteCarloModel as m
+import traceback
+from model import MonteCarloModel as m
 
 def show_splash_screen():
     os.system('clear')
@@ -23,7 +24,11 @@ def portfolio_optimization():
 
 def command_line():
     while True:
-        exec(input(">"))
+        try:
+            exec(input(">"))
+        except Exception:
+            traceback.print_exc()
+
 
 def main():
     show_splash_screen()

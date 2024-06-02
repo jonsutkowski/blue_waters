@@ -244,7 +244,7 @@ class MonteCarloModel:
         # If the dimension_reduction_transform object is "null", generate a transform using a set of
         # randomly generated portfolios. Each of the random portfolios are converted
         # into a 64-variable data point (a "1" or "0" for each team)
-        if BlueWaters.dimension_reduction_transform == "null":
+        if MonteCarloModel.dimension_reduction_transform == "null":
             baseline_n64_coords = []
             random_portfolios = Portfolio.generate_random_portfolios(100)
             for portfolio in random_portfolios:
@@ -256,8 +256,8 @@ class MonteCarloModel:
                         portfolio_n64_coords.append(0)
                 baseline_n64_coords.append(portfolio_n64_coords)
             baseline_n64_coords = np.array(baseline_n64_coords)
-            BlueWaters.dimension_reduction_transform = TSNE(n_components=2)
-            BlueWaters.dimension_reduction_transform.fit(baseline_n64_coords)
+            MonteCarloModel.dimension_reduction_transform = TSNE(n_components=2)
+            MonteCarloModel.dimension_reduction_transform.fit(baseline_n64_coords)
 
         portfolio_n64_coords = portfolios_data_to_plot["portfolio_n64_coords"]
         #umap_transformer = umap.UMAP(n_neighbors=5, min_dist=0.1)
@@ -266,7 +266,7 @@ class MonteCarloModel:
         #pca = PCA(n_components=2)
         #pca.fit(baseline_n64_coords)
         portfolio_n64_coords = np.array(portfolio_n64_coords)
-        portfolio_n2_coords = BlueWaters.dimension_reduction_transform.fit_transform(portfolio_n64_coords)
+        portfolio_n2_coords = MonteCarloModel.dimension_reduction_transform.fit_transform(portfolio_n64_coords)
         for n2_coord in portfolio_n2_coords:
             portfolios_data_to_plot["portfolio_dimension_reduced_X_coord"].append(n2_coord[0])
             portfolios_data_to_plot["portfolio_dimension_reduced_Y_coord"].append(n2_coord[1])
@@ -356,47 +356,51 @@ class MonteCarloModel:
         csvWriter.writerows(output_array)                           # load the data into the file
 
 
-# if __name__ == "__main__":
-#     BlueWaters.initiate_model(num_brackets=100000, num_portfolios=1)
-#     initial_portfolio = BlueWaters.Portfolio.new_portfolio([
-#         "Alabama",                                         # price: 21
-#         "Baylor",                                          # price: 10
-#         "Drake",                                           # price: <scripts.teams.Package object at 0x7f0dba1c9580>
-#         "Illinois",                                        # price: 2
-#         "Iona",                                            # price: <scripts.teams.Package object at 0x7f0dae99fc70>
-#         "Kansas",                                          # price: 20
-#         "Kennesaw St.",                                    # price: <scripts.teams.Package object at 0x7f0dba1d8cd0>
-#         "Kent St.",                                        # price: 1
-#         "Kentucky",                                        # price: 4
-#         "Lousiana",                                        # price: <scripts.teams.Package object at 0x7f0dae99fc70>
-#         "Marquette",                                       # price: 14
-#         "Miami",                                           # price: 5
-#         "Missouri",                                        # price: 3
-#         "Northern Kentucky",                               # price: <scripts.teams.Package object at 0x7f0dae99fc70>
-#         "Oral Roberts",                                    # price: <scripts.teams.Package object at 0x7f0dba1d8cd0>
-#         "TCU",                                             # price: 4
-#         "Tennessee",                                       # price: 6
-#         "UNC Asheville",                                   # price: <scripts.teams.Package object at 0x7f0dba1c9580>
-#         "USC",                                             # price: <scripts.teams.Package object at 0x7f0dae99fc70>
-#         "VCU",                                             # price: 1
-#         "Virginia"                                         # price: 5
-#     ])
-#     initial_portfolio.name = "Initial Portfolio"
-#     initial_portfolio.print_portfolio()
-#     while True:
-#         best_portfolio = BlueWaters.Portfolio.find_relative_best_portfolio_from_seed(initial_portfolio)
-#         best_portfolio.print_portfolio()
-#
+if __name__ == "__main__":
+    MonteCarloModel.initiate_model(num_brackets=10000, num_portfolios=500)
+    initial_portfolio = MonteCarloModel.Portfolio.new_portfolio([
+        "Alabama",                                         # price: 21
+        "Baylor",                                          # price: 10
+        "Drake",                                           # price: <scripts.teams.Package object at 0x7f0dba1c9580>
+        "Illinois",                                        # price: 2
+        "Iona",                                            # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "Kansas",                                          # price: 20
+        "Kennesaw St.",                                    # price: <scripts.teams.Package object at 0x7f0dba1d8cd0>
+        "Kent St.",                                        # price: 1
+        "Kentucky",                                        # price: 4
+        "Lousiana",                                        # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "Marquette",                                       # price: 14
+        "Miami",                                           # price: 5
+        "Missouri",                                        # price: 3
+        "Northern Kentucky",                               # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "Oral Roberts",                                    # price: <scripts.teams.Package object at 0x7f0dba1d8cd0>
+        "TCU",                                             # price: 4
+        "Tennessee",                                       # price: 6
+        "UNC Asheville",                                   # price: <scripts.teams.Package object at 0x7f0dba1c9580>
+        "USC",                                             # price: <scripts.teams.Package object at 0x7f0dae99fc70>
+        "VCU",                                             # price: 1
+        "Virginia"                                         # price: 5
+    ])
+    initial_portfolio.name = "Initial Portfolio"
 
-    # BlueWaters.export_team_data()
-    # BlueWaters.print_win_rates_by_regional_seed()
+    MonteCarloModel.plot_portfolios()
 
-    #initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
-    #portfolio = Portfolio.PORTFOLIO_LIST[0]
+    exit(0)
 
-    #portfolio.find_relative_best_portfolio_from_seed(portfolio)
-    # for n in range(0,100):
-    #     Portfolio.generate_random_portfolio_from_seed(portfolio).name
+    #initial_portfolio.print_portfolio()
+    while True:
+        best_portfolio = MonteCarloModel.Portfolio.find_relative_best_portfolio_from_seed(initial_portfolio)
+        #best_portfolio.print_portfolio()
+
+    MonteCarloModel.export_team_data()
+    MonteCarloModel.print_win_rates_by_regional_seed()
+
+    initial_best_portfolio = Portfolio.find_relative_best_portfolio_from_seed(Portfolio.PORTFOLIO_LIST[0])
+    portfolio = Portfolio.PORTFOLIO_LIST[0]
+
+    portfolio.find_relative_best_portfolio_from_seed(portfolio)
+    for n in range(0,100):
+        Portfolio.generate_random_portfolio_from_seed(portfolio).name
     
-    # print("Plotting portfolios:")
-    # BlueWaters.plot_portfolios()
+    print("Plotting portfolios:")
+    MonteCarloModel.plot_portfolios()
